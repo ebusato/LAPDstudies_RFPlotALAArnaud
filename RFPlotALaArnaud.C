@@ -1,4 +1,7 @@
 // Example: root -l 'RFPlotALaArnaud.C("~/godaq_rootfiles/analysis_v2.12-calibG2/run111.root")'
+// h2 can be partly obtained quickly by doing:
+//    .L RFPlotALaArnaud.C 
+//    RFPlotALaArnaudDirectly("NoLORs == 1", "analysis_v2.14-calibG2/run111.root", "analysis_v2.14-calibG2/run110.root")
 
 #include "TFile.h"
 #include "TTree.h"
@@ -68,9 +71,10 @@ void RFPlotALaArnaud(int nEvents, TString fileName0, TString fileName1="", TStri
 	TH2F* h2 = new TH2F("h2", "h2", 100, 0, 40, 100, 0, 600);
 	
 	TH1F* hDeltaTRF = new TH1F("hDeltaTRF", "hDeltaTRF", 100, -100, 100);
-	TH1F* hPeriod = new TH1F("hPeriod", "hPeriod", 100, 0, 100);
+	TH1F* hPeriod = new TH1F("hPeriod", "hPeriod", 5000, 0, 100);
 	
-	TCanvas* cc = new TCanvas("cc", "cc");
+	//TCanvas* cc = new TCanvas("cc", "cc");
+	TGraph* gRF = new TGraph(999);
         while (reader.Next() && *Evt < nEvents) {
 		if(*Evt%500 == 0) {
 			cout << "Event " << *Evt << endl;
@@ -80,7 +84,7 @@ void RFPlotALaArnaud(int nEvents, TString fileName0, TString fileName1="", TStri
 		if(*NoLORs >= 10) {
 			continue;
 		}
-		TGraph* gRF = new TGraph(999);
+		
 		for(int i = 0; i < 999; i++) {
 			gRF->SetPoint(i, SampleTimes[i], PulseRF[i]);
 		}
@@ -114,10 +118,6 @@ void RFPlotALaArnaud(int nEvents, TString fileName0, TString fileName1="", TStri
 		
 		//cout << "NoLORs = " << *NoLORs << endl;
 		for(int j = 0; j < *NoLORs; j++) {
-			
-			if(LORTMean[j] < 20 || LORTMean[j] > 50) {
-				continue;
-			}
 // 			cout << "IDs: " << LORIdx1[j] << " "<< LORIdx2[j] << endl;
 // 			cout << " Energies: " << E[LORIdx1[j]] << " " << E[LORIdx2[j]] << endl;
 // 			cout << " Times: " << LORTRF[j] << " " << LORTMean[j] << endl;
@@ -158,7 +158,6 @@ void RFPlotALaArnaud(int nEvents, TString fileName0, TString fileName1="", TStri
 			
 			hDeltaTRF->Fill(TRFfit - LORTRF[j]);
 		}
-		delete gRF;
 		delete f;
         }
 	
@@ -170,4 +169,51 @@ void RFPlotALaArnaud(int nEvents, TString fileName0, TString fileName1="", TStri
 	hDeltaTRF->Draw();
 	TCanvas* c4 = new TCanvas("c4", "c4");
 	hPeriod->Draw();
+	
+	TFile* fOut = new TFile("RFPlotALaArnaud.root", "recreate");
+	h1->Write();
+	h2->Write();
+	hDeltaTRF->Write();
+	hPeriod->Write();
+	fOut->Write();
 }
+
+void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", TString fileName2="", TString fileName3="", TString fileName4="", 
+		       TString fileName5="", TString fileName6="", TString fileName7="", 
+		       TString fileName8="", TString fileName9="") {
+	TChain ch("tree");
+	ch.Add(fileName0.Data());
+	if(fileName1 != "") {
+		ch.Add(fileName1);
+	}
+	if(fileName2 != "") {
+		ch.Add(fileName2);
+	}
+	if(fileName3 != "") {
+		ch.Add(fileName3);
+	}
+	if(fileName4 != "") {
+		ch.Add(fileName4);
+	}
+	if(fileName5 != "") {
+		ch.Add(fileName5);
+	}
+	if(fileName6 != "") {
+		ch.Add(fileName6);
+	}
+	if(fileName7 != "") {
+		ch.Add(fileName7);
+	}
+	if(fileName8 != "") {
+		ch.Add(fileName8);
+	}
+	if(fileName9 != "") {
+		ch.Add(fileName9);
+	}
+	TCanvas* c = new TCanvas("c", "c");
+	TH2F* h = new TH2F("h", "h", 100, 0, 40, 200, 0, 1000);
+	ch.Draw("E[LORIdx1] : LORTMean - LORTRF>>h",  cut, "colz");
+	ch.Draw("E[LORIdx1] : LORTMean - LORTRF>>+h",  cut, "colz");
+	h->Draw("colz");
+}
+
