@@ -263,8 +263,8 @@ TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmi
 
 void MakeSpillOutPlots()
 {
-	TFile* f0 = new TFile("~/godaq/v2.10/run91LOR.root", "read");
-	TFile* f1 = new TFile("~/godaq/v2.10/run110LOR.root", "read");
+	TFile* f0 = new TFile("analysis_v2.17-calibG2/run91LOR.root", "read");
+	TFile* f1 = new TFile("analysis_v2.17-calibG2/run78LOR.root", "read");
 	
 	TTree* t0 = (TTree*) f0->Get("tree");
 	TTree* t1 = (TTree*) f1->Get("tree");
