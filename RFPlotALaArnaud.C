@@ -1,7 +1,8 @@
 // Example: root -l 'RFPlotALaArnaud.C("~/godaq_rootfiles/analysis_v2.12-calibG2/run111.root")'
 // h2 can be partly obtained quickly by doing:
 //    .L RFPlotALaArnaud.C 
-//    RFPlotALaArnaudDirectly("NoLORs == 1", "analysis_v2.14-calibG2/run111.root", "analysis_v2.14-calibG2/run110.root")
+//    RFPlotALaArnaudDirectly("T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50", "analysis_v2.16-calibG2/run110LOR.root", "analysis_v2.16-calibG2/run111LOR.root")
+//    RFPlotALaArnaudDirectly("NoLORs == 1", "analysis_v2.14-calibG2/run110.root", "analysis_v2.14-calibG2/run111.root")
 
 #include "TFile.h"
 #include "TTree.h"
@@ -210,10 +211,109 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	if(fileName9 != "") {
 		ch.Add(fileName9);
 	}
-	TCanvas* c = new TCanvas("c", "c");
-	TH2F* h = new TH2F("h", "h", 100, 0, 40, 200, 0, 1000);
-	ch.Draw("E[LORIdx1] : LORTMean - LORTRF>>h",  cut, "colz");
-	ch.Draw("E[LORIdx1] : LORTMean - LORTRF>>+h",  cut, "colz");
-	h->Draw("colz");
+	TCanvas* c0 = new TCanvas("c0", "c0");
+	ch.Draw("RateLvsL3 : Entry$");
+	
+	TCanvas* c1 = new TCanvas("c1", "c1");
+	TH2F* hArnaud = new TH2F("hArnaud", "hArnaud", 100, 0, 40, 200, 0, 1000);
+	ch.Draw("E[LORIdx1] : LORTMean - LORTRF>>hArnaud",  cut, "colz");
+	ch.Draw("E[LORIdx2] : LORTMean - LORTRF>>+hArnaud",  cut, "colz");
+	hArnaud->Draw("colz");
+	
+	TCanvas* c2 = new TCanvas("c2", "c2");
+	TH1F* hESpillOut = new TH1F("hESpillOut", "hESpillOut", 100, 0, 1100);
+	TH1F* hESpillIn = new TH1F("hESpillIn", "hESpillIn", 100, 0, 1100);
+	hESpillIn->SetLineColor(kRed);
+	ch.Draw("E[LORIdx1]>>hESpillOut", cut && "abs(LORTMean - LORTRF - 7) > 5");
+	ch.Draw("E[LORIdx2]>>+hESpillOut", cut && "abs(LORTMean - LORTRF - 7) > 5");
+	ch.Draw("E[LORIdx1]>>hESpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
+	ch.Draw("E[LORIdx2]>>+hESpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
+	hESpillOut->Draw();
+	hESpillIn->Draw("same");
+	
+	TCanvas* c3 = new TCanvas("c3", "c3");
+	TH1F* hZmarSpillOut = new TH1F("hZmarSpillOut", "hZmarSpillOut", 100, -100, 100);
+	TH1F* hZmarSpillIn = new TH1F("hZmarSpillIn", "hZmarSpillIn", 100, -100, 100);
+	hZmarSpillIn->SetLineColor(kRed);
+	ch.Draw("LORZmar>>hZmarSpillOut", cut && "abs(LORTMean - LORTRF - 7) > 5");
+	ch.Draw("LORZmar>>+hZmarSpillOut", cut && "abs(LORTMean - LORTRF - 7) > 5");
+	ch.Draw("LORZmar>>hZmarSpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
+	ch.Draw("LORZmar>>+hZmarSpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
+	hZmarSpillIn->Scale(1/hZmarSpillIn->Integral());
+	hZmarSpillOut->Scale(1/hZmarSpillOut->Integral());
+	hZmarSpillOut->Draw();
+	hZmarSpillIn->Draw("same");
+	hZmarSpillOut->Draw("same");
 }
 
+
+TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmin, double xmax, int color, bool normalize=false)
+{
+	TH1F* h = new TH1F(hName.Data(), hName.Data(), Nbins, xmin, xmax);
+	TString temp(var);
+	temp+=">>";
+	temp+=hName;
+	t->Draw(temp.Data(), cut);
+	h->SetLineColor(color);
+	if(normalize) {
+		h->Scale(1/h->Integral());
+	}
+	return h;
+}
+
+void MakeSpillOutPlots()
+{
+	TFile* f0 = new TFile("~/godaq/v2.10/run91LOR.root", "read");
+	TFile* f1 = new TFile("~/godaq/v2.10/run110LOR.root", "read");
+	
+	TTree* t0 = (TTree*) f0->Get("tree");
+	TTree* t1 = (TTree*) f1->Get("tree");
+	
+	TCut cutTimes("T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50");
+	TCut cutSpillOut("abs(LORTMean - LORTRF - 7) > 5");
+	TCut cut = cutTimes && cutSpillOut;
+	
+	TCut cut0 = "Evt > 2000 && Evt < 60000";
+	TCut cut1 = "Evt > 2000 && Evt < 60000";
+	
+	TCanvas* c0 = new TCanvas("c0", "c0");
+	c0->Divide(2,2);
+	c0->cd(1);
+	t0->Draw("RateLvsL3 : Evt");
+	c0->cd(2);
+	t1->Draw("RateLvsL3 : Evt");
+	c0->cd(3);
+	t0->Draw("RateLvsL3 : Evt", cut0);
+	c0->cd(4);
+	t1->Draw("RateLvsL3 : Evt", cut1);
+	
+	TCanvas* c1 = new TCanvas("c1", "c1");
+	c1->Divide(2,1);
+	c1->cd(1);
+	TH2F* hArnaud_0 = new TH2F("hArnaud_0", "hArnaud_0", 100, 0, 40, 200, 0, 1000);
+	t0->Draw("E[LORIdx1] : LORTMean - LORTRF>>hArnaud_0",  cut0 && cutTimes, "colz");
+	t0->Draw("E[LORIdx2] : LORTMean - LORTRF>>+hArnaud_0",  cut0 && cutTimes, "colz");
+	hArnaud_0->Draw("colz");
+	c1->cd(2);
+	TH2F* hArnaud_1 = new TH2F("hArnaud_1", "hArnaud_1", 100, 0, 40, 200, 0, 1000);
+	t1->Draw("E[LORIdx1] : LORTMean - LORTRF>>hArnaud_1",  cut1 && cutTimes, "colz");
+	t1->Draw("E[LORIdx2] : LORTMean - LORTRF>>+hArnaud_1",  cut1 && cutTimes, "colz");
+	hArnaud_1->Draw("colz");
+	
+	TCanvas* c2 = new TCanvas("c2", "c2");
+	TH1F* hETemp_0 = Draw(t0, "E[LORIdx1]", cut0 && cut, "hE_01", 100, 0, 1000, kRed);
+	TH1F* hE_0 = Draw(t0, "E[LORIdx2]", cut0 && cut, "hE_02", 100, 0, 1000, kRed);
+	hE_0->Add(hETemp_0);
+	TH1F* hETemp_1 = Draw(t1, "E[LORIdx1]", cut1 && cut, "hE_11", 100, 0, 1000, kGreen+2);
+	TH1F* hE_1 = Draw(t1, "E[LORIdx2]", cut1 && cut, "hE_12", 100, 0, 1000, kGreen+2);
+	hE_1->Add(hETemp_1);
+	hE_0->Draw();
+	hE_1->Draw("same");
+	
+	TCanvas* c3 = new TCanvas("c3", "c3");
+	TH1F* hZmar_0 = Draw(t0, "LORZmar", cut0 && cut, "hZmar", 100, -100, 100, kRed, true);
+	TH1F* hZmar_1 = Draw(t1, "LORZmar", cut1 && cut, "hZmar", 100, -100, 100, kGreen+2, true);
+	hZmar_0->Draw();
+	hZmar_1->Draw("same");
+	
+}
