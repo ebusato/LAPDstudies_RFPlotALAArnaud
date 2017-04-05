@@ -10,6 +10,8 @@
 #include <TTreeReaderValue.h>
 #include <TTreeReaderArray.h>
 
+using namespace RooFit;
+
 TF1* fitSine(TGraph* g) {
 	TF1* f = new TF1("f","[0] + [1]*TMath::Sin([2]*x + [3])", 0, 200);
 	f->SetParameter(2, 2*TMath::Pi()*24.85e6/1e9);
@@ -261,10 +263,48 @@ TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmi
 	return h;
 }
 
+// RooDataSet* MakeDataSetFromTH1(TH1F* h)
+TH1F* MakeDataSetFromTH1(TH1F* h)
+{
+  RooRealVar* z = new RooRealVar("z", "z", -100, 100);
+  z->setBins(1000);
+  RooDataSet* ds = new RooDataSet("ds","ds",RooArgSet(*z)) ;
+  for(int i=0; i<h->GetNbinsX(); i++) {
+	double binContent = h->GetBinContent(i);
+	if(binContent!=0) {
+	  double binCenter = h->GetBinCenter(i);
+	  z->setVal(binCenter);
+	  for(int j=0; j<binContent; j++) {
+	  	ds->add(RooArgSet(*z));
+	  }
+	}
+  }
+  RooDataHist* dh = new RooDataHist("dh", "dh", *z, Import(*h));
+  
+  RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::MirrorBoth, 1.5) ;
+//   RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::NoMirror) ;
+//   RooPlot* frame = z->frame() ;
+// //   ds->plotOn(frame);
+//   dh->plotOn(frame);
+//   kest1.plotOn(frame);
+//   frame->Draw();
+//   
+  TH1F* hKeys = (TH1F*) kest1.createHistogram("hKeys", *z);
+  hKeys->SetLineColor(kMagenta);
+//   hKeys->Draw("histsame");
+  return hKeys;
+}
+  //RooDataSet* data = new RooDataSet("data","data",RooArgSet(x));
+  //x=4;
+  //data->add(RooArgSet(x));
+
+
 void MakeSpillOutPlots()
 {
-	TFile* f0 = new TFile("analysis_v2.17-calibG2/run91LOR.root", "read");
-	TFile* f1 = new TFile("analysis_v2.17-calibG2/run78LOR.root", "read");
+	TFile* f0 = new TFile("analysis_v2.18-calibG2/run91LOR.root", "read");
+	TFile* f1 = new TFile("analysis_v2.18-calibG2/run110LOR.root", "read");
+// 	TFile* f0 = new TFile("~/godaq/v2.10/run91LOR.root", "read");
+// 	TFile* f1 = new TFile("~/godaq/v2.10/run110LOR.root", "read");
 	
 	TTree* t0 = (TTree*) f0->Get("tree");
 	TTree* t1 = (TTree*) f1->Get("tree");
@@ -272,6 +312,9 @@ void MakeSpillOutPlots()
 	TCut cutTimes("T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50");
 	TCut cutSpillOut("abs(LORTMean - LORTRF - 7) > 5");
 	TCut cut = cutTimes && cutSpillOut;
+	
+// 	TCut cut0 = "Evt > 2000 && Evt < 60000";
+// 	TCut cut1 = "Evt > 2000 && Evt < 60000";
 	
 	TCut cut0 = "Evt > 2000 && Evt < 60000";
 	TCut cut1 = "Evt > 2000 && Evt < 60000";
@@ -287,6 +330,7 @@ void MakeSpillOutPlots()
 	c0->cd(4);
 	t1->Draw("RateLvsL3 : Evt", cut1);
 	
+	/*
 	TCanvas* c1 = new TCanvas("c1", "c1");
 	c1->Divide(2,1);
 	c1->cd(1);
@@ -309,11 +353,24 @@ void MakeSpillOutPlots()
 	hE_1->Add(hETemp_1);
 	hE_0->Draw();
 	hE_1->Draw("same");
-	
+	*/
 	TCanvas* c3 = new TCanvas("c3", "c3");
-	TH1F* hZmar_0 = Draw(t0, "LORZmar", cut0 && cut, "hZmar", 100, -100, 100, kRed, true);
-	TH1F* hZmar_1 = Draw(t1, "LORZmar", cut1 && cut, "hZmar", 100, -100, 100, kGreen+2, true);
+	TH1F* hZmar_0 = Draw(t0, "LORZmar", cut0 && cut, "hZmar", 2000, -100, 100, kRed);
+	TH1F* hZmar_1 = Draw(t1, "LORZmar", cut1 && cut, "hZmar", 2000, -100, 100, kGreen+2);
+	TH1F* hKeys_0 = MakeDataSetFromTH1(hZmar_0);
+	TH1F* hKeys_1 = MakeDataSetFromTH1(hZmar_1);
+	hKeys_1->SetLineColor(kBlue);
+	hZmar_0->Scale(1/hZmar_0->Integral());
 	hZmar_0->Draw();
+	hZmar_1->Scale(1/hZmar_1->Integral());
 	hZmar_1->Draw("same");
+	
+// 	TCanvas* c4 = new TCanvas("c4", "c4");
+// 	RooDataSet* data_0 = MakeDataSetFromTH1(hZmar_0);
+	hKeys_0->Scale(16/hKeys_0->Integral());
+	hKeys_0->Draw("same");
+	hKeys_1->Scale(16/hKeys_1->Integral());
+	hKeys_1->Draw("same");
+// 	h->Draw();
 	
 }
