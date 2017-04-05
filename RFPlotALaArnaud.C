@@ -249,7 +249,7 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 }
 
 
-TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmin, double xmax, int color, bool normalize=false)
+TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmin, double xmax, int color, int linesize, bool normalize=false)
 {
 	TH1F* h = new TH1F(hName.Data(), hName.Data(), Nbins, xmin, xmax);
 	TString temp(var);
@@ -257,6 +257,7 @@ TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmi
 	temp+=hName;
 	t->Draw(temp.Data(), cut);
 	h->SetLineColor(color);
+	h->SetLineWidth(linesize);
 	if(normalize) {
 		h->Scale(1/h->Integral());
 	}
@@ -264,7 +265,7 @@ TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmi
 }
 
 // RooDataSet* MakeDataSetFromTH1(TH1F* h)
-TH1F* MakeDataSetFromTH1(TH1F* h)
+TH1F* MakeKernelPDFFromTH1(TH1F* h)
 {
   RooRealVar* z = new RooRealVar("z", "z", -100, 100);
   z->setBins(1000);
@@ -281,7 +282,7 @@ TH1F* MakeDataSetFromTH1(TH1F* h)
   }
   RooDataHist* dh = new RooDataHist("dh", "dh", *z, Import(*h));
   
-  RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::MirrorBoth, 1.5) ;
+  RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::MirrorBoth, 1) ;
 //   RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::NoMirror) ;
 //   RooPlot* frame = z->frame() ;
 // //   ds->plotOn(frame);
@@ -290,7 +291,6 @@ TH1F* MakeDataSetFromTH1(TH1F* h)
 //   frame->Draw();
 //   
   TH1F* hKeys = (TH1F*) kest1.createHistogram("hKeys", *z);
-  hKeys->SetLineColor(kMagenta);
 //   hKeys->Draw("histsame");
   return hKeys;
 }
@@ -303,8 +303,8 @@ void MakeSpillOutPlots()
 {
 	TFile* f0 = new TFile("analysis_v2.18-calibG2/run91LOR.root", "read");
 	TFile* f1 = new TFile("analysis_v2.18-calibG2/run110LOR.root", "read");
-// 	TFile* f0 = new TFile("~/godaq/v2.10/run91LOR.root", "read");
-// 	TFile* f1 = new TFile("~/godaq/v2.10/run110LOR.root", "read");
+// 	TFile* f0 = new TFile("analysis_v2.18-calibG2/run98LOR.root", "read");
+// 	TFile* f1 = new TFile("analysis_v2.18-calibG2/run99LOR.root", "read");
 	
 	TTree* t0 = (TTree*) f0->Get("tree");
 	TTree* t1 = (TTree*) f1->Get("tree");
@@ -330,7 +330,7 @@ void MakeSpillOutPlots()
 	c0->cd(4);
 	t1->Draw("RateLvsL3 : Evt", cut1);
 	
-	/*
+	
 	TCanvas* c1 = new TCanvas("c1", "c1");
 	c1->Divide(2,1);
 	c1->cd(1);
@@ -345,20 +345,21 @@ void MakeSpillOutPlots()
 	hArnaud_1->Draw("colz");
 	
 	TCanvas* c2 = new TCanvas("c2", "c2");
-	TH1F* hETemp_0 = Draw(t0, "E[LORIdx1]", cut0 && cut, "hE_01", 100, 0, 1000, kRed);
-	TH1F* hE_0 = Draw(t0, "E[LORIdx2]", cut0 && cut, "hE_02", 100, 0, 1000, kRed);
+	TH1F* hETemp_0 = Draw(t0, "E[LORIdx1]", cut0 && cut, "hE_01", 100, 0, 1000, kRed, 1);
+	TH1F* hE_0 = Draw(t0, "E[LORIdx2]", cut0 && cut, "hE_02", 100, 0, 1000, kRed, 1);
 	hE_0->Add(hETemp_0);
-	TH1F* hETemp_1 = Draw(t1, "E[LORIdx1]", cut1 && cut, "hE_11", 100, 0, 1000, kGreen+2);
-	TH1F* hE_1 = Draw(t1, "E[LORIdx2]", cut1 && cut, "hE_12", 100, 0, 1000, kGreen+2);
+	TH1F* hETemp_1 = Draw(t1, "E[LORIdx1]", cut1 && cut, "hE_11", 100, 0, 1000, kGreen+2, 1);
+	TH1F* hE_1 = Draw(t1, "E[LORIdx2]", cut1 && cut, "hE_12", 100, 0, 1000, kGreen+2, 1);
 	hE_1->Add(hETemp_1);
 	hE_0->Draw();
 	hE_1->Draw("same");
-	*/
+	
 	TCanvas* c3 = new TCanvas("c3", "c3");
-	TH1F* hZmar_0 = Draw(t0, "LORZmar", cut0 && cut, "hZmar", 2000, -100, 100, kRed);
-	TH1F* hZmar_1 = Draw(t1, "LORZmar", cut1 && cut, "hZmar", 2000, -100, 100, kGreen+2);
-	TH1F* hKeys_0 = MakeDataSetFromTH1(hZmar_0);
-	TH1F* hKeys_1 = MakeDataSetFromTH1(hZmar_1);
+	TH1F* hZmar_0 = Draw(t0, "LORZmar", cut0 && cut, "hZmar", 2000, -100, 100, kRed, 2);
+	TH1F* hZmar_1 = Draw(t1, "LORZmar", cut1 && cut, "hZmar", 2000, -100, 100, kGreen+2, 1);
+	TH1F* hKeys_0 = MakeKernelPDFFromTH1(hZmar_0);
+	TH1F* hKeys_1 = MakeKernelPDFFromTH1(hZmar_1);
+        hKeys_0->SetLineColor(kMagenta);
 	hKeys_1->SetLineColor(kBlue);
 	hZmar_0->Scale(1/hZmar_0->Integral());
 	hZmar_0->Draw();
