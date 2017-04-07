@@ -268,7 +268,7 @@ TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmi
 TH1F* MakeKernelPDFFromTH1(TH1F* h)
 {
   RooRealVar* z = new RooRealVar("z", "z", -100, 100);
-  z->setBins(1000);
+  z->setBins(10000);
   RooDataSet* ds = new RooDataSet("ds","ds",RooArgSet(*z)) ;
   for(int i=0; i<h->GetNbinsX(); i++) {
 	double binContent = h->GetBinContent(i);
@@ -291,6 +291,11 @@ TH1F* MakeKernelPDFFromTH1(TH1F* h)
 //   frame->Draw();
 //   
   TH1F* hKeys = (TH1F*) kest1.createHistogram("hKeys", *z);
+  
+  for(int i=0; i<hKeys->GetNbinsX(); i++) {
+	  hKeys->SetBinError(i, 0);
+// 	cout << "i, Err: " << i << "  " << hKeys->GetXaxis()->GetBinCenter(i) << "  " << hKeys->GetBinError(i) << endl;  
+  }
 //   hKeys->Draw("histsame");
   return hKeys;
 }
@@ -368,9 +373,9 @@ void MakeSpillOutPlots()
 	
 // 	TCanvas* c4 = new TCanvas("c4", "c4");
 // 	RooDataSet* data_0 = MakeDataSetFromTH1(hZmar_0);
-	hKeys_0->Scale(16/hKeys_0->Integral());
+	hKeys_0->Scale(hZmar_0->GetMaximum()/hKeys_0->GetMaximum());
 	hKeys_0->Draw("same");
-	hKeys_1->Scale(16/hKeys_1->Integral());
+	hKeys_1->Scale(hZmar_1->GetMaximum()/hKeys_1->GetMaximum());
 	hKeys_1->Draw("same");
 // 	h->Draw();
 	
