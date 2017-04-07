@@ -316,8 +316,8 @@ void MakeSpillOutPlots()
 // 	TCut cut0 = "Evt > 2000 && Evt < 60000";
 // 	TCut cut1 = "Evt > 2000 && Evt < 60000";
 	
-	TCut cut0 = "Evt > 2000 && Evt < 60000";
-	TCut cut1 = "Evt > 2000 && Evt < 60000";
+	TCut cut0 = "NoLORs == 1 && Evt > 2000 && Evt < 60000";
+	TCut cut1 = "NoLORs == 1 && Evt > 2000 && Evt < 60000";
 	
 	TCanvas* c0 = new TCanvas("c0", "c0");
 	c0->Divide(2,2);
