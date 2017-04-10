@@ -314,7 +314,7 @@ void MakeSpillOutPlots()
 	TTree* t0 = (TTree*) f0->Get("tree");
 	TTree* t1 = (TTree*) f1->Get("tree");
 	
-	TCut cutTimes("T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50");
+	TCut cutTimes("T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50 && LORRmar < 25");
 	TCut cutSpillOut("abs(LORTMean - LORTRF - 7) > 5");
 	TCut cut = cutTimes && cutSpillOut;
 	
@@ -360,7 +360,7 @@ void MakeSpillOutPlots()
 	hE_1->Draw("same");
 	
 	TCanvas* c3 = new TCanvas("c3", "c3");
-	TH1F* hZmar_0 = Draw(t0, "LORZmar", cut0 && cut, "hZmar", 2000, -100, 100, kRed, 2);
+	TH1F* hZmar_0 = Draw(t0, "LORZmar", cut0 && cut, "hZmar", 2000, -100, 100, kRed, 4);
 	TH1F* hZmar_1 = Draw(t1, "LORZmar", cut1 && cut, "hZmar", 2000, -100, 100, kGreen+2, 1);
 	TH1F* hKeys_0 = MakeKernelPDFFromTH1(hZmar_0);
 	TH1F* hKeys_1 = MakeKernelPDFFromTH1(hZmar_1);
