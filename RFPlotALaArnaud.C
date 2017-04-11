@@ -216,11 +216,27 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	TCanvas* c0 = new TCanvas("c0", "c0");
 	ch.Draw("RateLvsL3 : Entry$");
 	
-	TCanvas* c1 = new TCanvas("c1", "c1");
-	TH2F* hArnaud = new TH2F("hArnaud", "hArnaud", 100, 0, 40, 200, 0, 1000);
+	TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);
+	TH2F* hArnaud = new TH2F("hArnaud", "hArnaud", 100, 0, 40, 200, 0, 1050);
 	ch.Draw("E[LORIdx1] : LORTMean - LORTRF>>hArnaud",  cut, "colz");
 	ch.Draw("E[LORIdx2] : LORTMean - LORTRF>>+hArnaud",  cut, "colz");
+	hArnaud->GetYaxis()->SetTitle("E [keV]");
+	hArnaud->GetXaxis()->SetTitle("t_{#gamma#gamma} - t_{RF} [ns]");
+	hArnaud->GetYaxis()->SetTitleSize(0.05);
+	hArnaud->GetXaxis()->SetTitleSize(0.05);
+	hArnaud->GetYaxis()->SetTitleOffset(1.77);
+	hArnaud->GetXaxis()->SetTitleOffset(1.35);
+	hArnaud->GetYaxis()->SetLabelSize(0.05);
+	hArnaud->GetXaxis()->SetLabelSize(0.05);
+	hArnaud->GetZaxis()->SetLabelSize(0.04);
+	hArnaud->GetYaxis()->SetRangeUser(0,1050);
 	hArnaud->Draw("colz");
+	c1->SetLeftMargin(0.1695447);
+	c1->SetRightMargin(0.1428571);
+	PutText(0.46, 0.81, kBlack, "#font[22]{LAPD}", 0.04);
+	PutText(0.46, 0.76, kBlack, "#font[22]{Protons 65 MeV, I = 5 nA}", 0.04);
+	PutText(0.46, 0.71, kBlack, "#font[22]{Target PMMA 5 #times 5 cm}", 0.04);
+	c1->SaveAs("c1.png");
 	
 	TCanvas* c2 = new TCanvas("c2", "c2");
 	TH1F* hESpillOut = new TH1F("hESpillOut", "hESpillOut", 100, 0, 1100);
@@ -232,20 +248,12 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	ch.Draw("E[LORIdx2]>>+hESpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
 	hESpillOut->Draw();
 	hESpillIn->Draw("same");
-	
-	TCanvas* c3 = new TCanvas("c3", "c3");
-	TH1F* hZmarSpillOut = new TH1F("hZmarSpillOut", "hZmarSpillOut", 100, -100, 100);
-	TH1F* hZmarSpillIn = new TH1F("hZmarSpillIn", "hZmarSpillIn", 100, -100, 100);
-	hZmarSpillIn->SetLineColor(kRed);
-	ch.Draw("LORZmar>>hZmarSpillOut", cut && "abs(LORTMean - LORTRF - 7) > 5");
-	ch.Draw("LORZmar>>+hZmarSpillOut", cut && "abs(LORTMean - LORTRF - 7) > 5");
-	ch.Draw("LORZmar>>hZmarSpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
-	ch.Draw("LORZmar>>+hZmarSpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
-	hZmarSpillIn->Scale(1/hZmarSpillIn->Integral());
-	hZmarSpillOut->Scale(1/hZmarSpillOut->Integral());
-	hZmarSpillOut->Draw();
-	hZmarSpillIn->Draw("same");
-	hZmarSpillOut->Draw("same");
+}
+
+void RFPlotALaArnaud()
+{
+	TCut cut("NoLORs == 1 && T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50 && LORRmar < 25");
+	RFPlotALaArnaudDirectly(cut, "analysis_v2.18-calibG2/run110LOR.root");
 }
 
 
