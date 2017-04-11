@@ -265,7 +265,7 @@ TH1F* Draw(TTree* t, TString var, TCut cut, TString hName, int Nbins, double xmi
 }
 
 // RooDataSet* MakeDataSetFromTH1(TH1F* h)
-TH1F* MakeKernelPDFFromTH1(TH1F* h)
+TH1F* MakeKernelPDFFromTH1(TH1F* h, int color)
 {
   RooRealVar* z = new RooRealVar("z", "z", -100, 100);
   z->setBins(10000);
@@ -282,8 +282,8 @@ TH1F* MakeKernelPDFFromTH1(TH1F* h)
   }
   RooDataHist* dh = new RooDataHist("dh", "dh", *z, Import(*h));
   
-  RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::MirrorBoth, 1) ;
-//   RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::NoMirror) ;
+//   RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::MirrorBoth, 2) ;
+  RooKeysPdf kest1("kest1","kest1",*z,*ds,RooKeysPdf::NoMirror, 2) ;
 //   RooPlot* frame = z->frame() ;
 // //   ds->plotOn(frame);
 //   dh->plotOn(frame);
@@ -291,7 +291,17 @@ TH1F* MakeKernelPDFFromTH1(TH1F* h)
 //   frame->Draw();
 //   
   TH1F* hKeys = (TH1F*) kest1.createHistogram("hKeys", *z);
-  
+  hKeys->SetLineColor(color);
+  hKeys->SetFillColor(color);
+  hKeys->SetFillStyle(3002);
+  hKeys->GetYaxis()->SetTitle("Probability density [a. u.]");
+  hKeys->GetYaxis()->SetTitleSize(0.06);
+  hKeys->GetYaxis()->SetLabelSize(0.055);
+  hKeys->GetYaxis()->SetTitleOffset(1.39);
+  hKeys->GetXaxis()->SetTitle("z [mm]");
+  hKeys->GetXaxis()->SetTitleSize(0.06);
+  hKeys->GetXaxis()->SetLabelSize(0.055);
+  hKeys->GetXaxis()->SetTitleOffset(1.37);
   for(int i=0; i<hKeys->GetNbinsX(); i++) {
 	  hKeys->SetBinError(i, 0);
 // 	cout << "i, Err: " << i << "  " << hKeys->GetXaxis()->GetBinCenter(i) << "  " << hKeys->GetBinError(i) << endl;  
@@ -304,10 +314,49 @@ TH1F* MakeKernelPDFFromTH1(TH1F* h)
   //data->add(RooArgSet(x));
 
 
+class HalfMaxCoords {
+public:
+	void Print();
+	
+	double m_low;
+	double m_high;
+};
+  
+void HalfMaxCoords::Print()
+{
+	cout << "m_low = " << m_low << endl;
+	cout << "m_high = " << m_high << endl;
+}
+
+double Maximum(TH1F* h)
+{
+	double max = -1;
+	for(int i=0; i<h->GetNbinsX(); i++)
+	{
+		if(h->GetBinContent(i) > max) {
+			max = h->GetBinContent(i);
+		}
+	}
+	return max;
+}
+
+HalfMaxCoords FindHalfMaxCoords(TH1F* h)
+{
+   double max = Maximum(h);
+   int bin1 = h->FindFirstBinAbove(max/2.);
+   int bin2 = h->FindLastBinAbove(max/2.);
+   HalfMaxCoords coords;
+   coords.m_low = h->GetBinCenter(bin1);
+   coords.m_high = h->GetBinCenter(bin2);
+   return coords;
+}
+
 void MakeSpillOutPlots()
 {
 	TFile* f0 = new TFile("analysis_v2.18-calibG2/run91LOR.root", "read");
 	TFile* f1 = new TFile("analysis_v2.18-calibG2/run110LOR.root", "read");
+// 	TFile* f1 = new TFile("analysis_v2.18-calibG2/run91LOR.root", "read");
+	
 // 	TFile* f0 = new TFile("analysis_v2.18-calibG2/run98LOR.root", "read");
 // 	TFile* f1 = new TFile("analysis_v2.18-calibG2/run99LOR.root", "read");
 	
@@ -353,8 +402,8 @@ void MakeSpillOutPlots()
 	TH1F* hETemp_0 = Draw(t0, "E[LORIdx1]", cut0 && cut, "hE_01", 100, 0, 1000, kRed, 1);
 	TH1F* hE_0 = Draw(t0, "E[LORIdx2]", cut0 && cut, "hE_02", 100, 0, 1000, kRed, 1);
 	hE_0->Add(hETemp_0);
-	TH1F* hETemp_1 = Draw(t1, "E[LORIdx1]", cut1 && cut, "hE_11", 100, 0, 1000, kGreen+2, 1);
-	TH1F* hE_1 = Draw(t1, "E[LORIdx2]", cut1 && cut, "hE_12", 100, 0, 1000, kGreen+2, 1);
+	TH1F* hETemp_1 = Draw(t1, "E[LORIdx1]", cut1 && cut, "hE_11", 100, 0, 1000, kBlue, 1);
+	TH1F* hE_1 = Draw(t1, "E[LORIdx2]", cut1 && cut, "hE_12", 100, 0, 1000, kBlue, 1);
 	hE_1->Add(hETemp_1);
 	hE_0->Draw();
 	hE_1->Draw("same");
@@ -362,21 +411,42 @@ void MakeSpillOutPlots()
 	TCanvas* c3 = new TCanvas("c3", "c3");
 	TH1F* hZmar_0 = Draw(t0, "LORZmar", cut0 && cut, "hZmar", 2000, -100, 100, kRed, 4);
 	TH1F* hZmar_1 = Draw(t1, "LORZmar", cut1 && cut, "hZmar", 2000, -100, 100, kGreen+2, 1);
-	TH1F* hKeys_0 = MakeKernelPDFFromTH1(hZmar_0);
-	TH1F* hKeys_1 = MakeKernelPDFFromTH1(hZmar_1);
-        hKeys_0->SetLineColor(kMagenta);
-	hKeys_1->SetLineColor(kBlue);
+	TH1F* hKeys_0 = MakeKernelPDFFromTH1(hZmar_0, kMagenta);
+	TH1F* hKeys_1 = MakeKernelPDFFromTH1(hZmar_1, kBlue);
 	hZmar_0->Scale(1/hZmar_0->Integral());
 	hZmar_0->Draw();
 	hZmar_1->Scale(1/hZmar_1->Integral());
 	hZmar_1->Draw("same");
 	
-// 	TCanvas* c4 = new TCanvas("c4", "c4");
-// 	RooDataSet* data_0 = MakeDataSetFromTH1(hZmar_0);
 	hKeys_0->Scale(hZmar_0->GetMaximum()/hKeys_0->GetMaximum());
+	hKeys_0->GetYaxis()->SetRangeUser(0, hKeys_0->GetMaximum()*1.2);
+	hKeys_0->GetXaxis()->SetRangeUser(-50, 30);
 	hKeys_0->Draw("same");
-	hKeys_1->Scale(hZmar_1->GetMaximum()/hKeys_1->GetMaximum());
+	hKeys_1->Scale(Maximum(hKeys_0)/Maximum(hKeys_1));
+	hKeys_1->GetXaxis()->SetRangeUser(-50, 30);
 	hKeys_1->Draw("same");
-// 	h->Draw();
 	
+	
+	TCanvas* c4 = new TCanvas("c4", "c4");
+	gPad->SetGridx(1);
+	gPad->SetGridy(1);
+	hKeys_0->Draw();
+	hKeys_1->Draw("same");
+	HalfMaxCoords coords_0 = FindHalfMaxCoords(hKeys_0);
+	coords_0.Print();
+	HalfMaxCoords coords_1 = FindHalfMaxCoords(hKeys_1);
+	coords_1.Print();
+	cout << "Delta z = " << coords_0.m_high - coords_1.m_high << " mm " << endl;
+	
+	cout << "maximum = " << Maximum(hKeys_0) << "  " << Maximum(hKeys_1) << endl;
+	
+	TArrow* arr = new TArrow(coords_1.m_high, Maximum(hKeys_1)/2., coords_0.m_high, Maximum(hKeys_0)/2., 0.015, "<|-|>");
+	arr->SetLineColor(kBlack);
+	arr->SetFillColor(kBlack);
+	arr->SetAngle(48);
+	arr->Draw();
+	TLatex l;
+	l.SetTextColor(kBlack);
+	l.SetTextSize(0.05);
+	l.DrawLatex((coords_0.m_high + coords_1.m_high)/2.+5, Maximum(hKeys_1)/2.+0., Form("#Delta z = %.1f mm", coords_0.m_high - coords_1.m_high));
 }
