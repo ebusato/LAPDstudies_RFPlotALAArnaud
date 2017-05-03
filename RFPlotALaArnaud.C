@@ -248,12 +248,41 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	ch.Draw("E[LORIdx2]>>+hESpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
 	hESpillOut->Draw();
 	hESpillIn->Draw("same");
+
+	TCanvas* c3 = new TCanvas("c3","c3");
+	c3->SetGridx(1);
+	c3->SetGridy(1);
+	TH1F* hE = new TH1F("hE", "hE", 200, 0, 1200);
+	ch.Draw("E[LORIdx1]>>hE", cut);
+	ch.Draw("E[LORIdx2]>>+hE", cut);
+	hE->GetXaxis()->SetTitle("E [keV]");
+	hE->GetYaxis()->SetTitle("Entries [a. u.]");
+	hE->GetYaxis()->SetTitleSize(0.055);
+	hE->GetXaxis()->SetTitleSize(0.055);
+	hE->GetYaxis()->SetTitleOffset(1.6);
+	hE->GetXaxis()->SetTitleOffset(1.35);
+	hE->GetYaxis()->SetLabelSize(0.05);
+	hE->GetXaxis()->SetLabelSize(0.05);
+	hE->GetZaxis()->SetLabelSize(0.04);
+	hE->SetFillStyle(3002);
+	hE->SetFillColor(kGreen-2);
+	hE->Scale(1/hE->Integral());
+	hE->Draw();
+	//	hESpillOut->Scale(1.8);
+	//hESpillOut->Draw("same");
+	PutText(0.55, 0.81, kBlack, "LAPD", 0.05);
+	PutText(0.55, 0.75, kBlack, "Protons 65 MeV, I = 5 nA", 0.05);
+	PutText(0.55, 0.69, kBlack, "Target PMMA 5 #times 5 cm", 0.05);
 }
 
 void RFPlotALaArnaud()
 {
-	TCut cut("NoLORs == 1 && T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50 && LORRmar < 25");
-	RFPlotALaArnaudDirectly(cut, "analysis_v2.18-calibG2/run110LOR.root");
+  //TCut cut("NoLORs == 1 && T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50 && LORRmar < 25");
+	//RFPlotALaArnaudDirectly(cut, "analysis_v2.18-calibG2/run110LOR.root");
+
+TCut cut("NoLORs == 1");
+
+ RFPlotALaArnaudDirectly(cut, "/home/ebusato/godaq/v2.10/run110LOR.root", "/home/ebusato/godaq/v2.10/run111LOR.root");
 }
 
 
