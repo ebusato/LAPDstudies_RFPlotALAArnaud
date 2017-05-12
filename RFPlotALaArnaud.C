@@ -282,7 +282,9 @@ void RFPlotALaArnaud()
 
 TCut cut("NoLORs == 1");
 
- RFPlotALaArnaudDirectly(cut, "/home/ebusato/godaq/v2.10/run110LOR.root", "/home/ebusato/godaq/v2.10/run111LOR.root");
+//RFPlotALaArnaudDirectly(cut, "/home/ebusato/godaq/v2.10/run110LOR.root", "/home/ebusato/godaq/v2.10/run111LOR.root");
+
+RFPlotALaArnaudDirectly(cut, "analysis_v3.2-calibG2/run110LOR.root", "analysis_v3.2-calibG2/run111LOR.root");
 }
 
 
