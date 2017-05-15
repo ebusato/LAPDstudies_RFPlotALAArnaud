@@ -246,6 +246,7 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	ch.Draw("E[LORIdx2]>>+hESpillOut", cut && "abs(LORTMean - LORTRF - 7) > 5");
 	ch.Draw("E[LORIdx1]>>hESpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
 	ch.Draw("E[LORIdx2]>>+hESpillIn", cut && "abs(LORTMean - LORTRF - 7) < 5");
+	hESpillOut->SetLineStyle(kDashed);
 	hESpillOut->Draw();
 	hESpillIn->Draw("same");
 
@@ -280,11 +281,10 @@ void RFPlotALaArnaud()
   //TCut cut("NoLORs == 1 && T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50 && LORRmar < 25");
 	//RFPlotALaArnaudDirectly(cut, "analysis_v2.18-calibG2/run110LOR.root");
 
-TCut cut("NoLORs == 1");
+TCut cut("NoLORs == 1 && Evt > 3400 && Evt < 60000");
 
-//RFPlotALaArnaudDirectly(cut, "/home/ebusato/godaq/v2.10/run110LOR.root", "/home/ebusato/godaq/v2.10/run111LOR.root");
-
-RFPlotALaArnaudDirectly(cut, "analysis_v3.2-calibG2/run110LOR.root", "analysis_v3.2-calibG2/run111LOR.root");
+// RFPlotALaArnaudDirectly(cut, "analysis_v3.2-calibG2/run110LOR.root", "analysis_v3.2-calibG2/run111LOR.root");
+ RFPlotALaArnaudDirectly(cut, "analysis_v3.3-calibK1/run118LOR.root");
 }
 
 
