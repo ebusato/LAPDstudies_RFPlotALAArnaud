@@ -216,7 +216,7 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	TCanvas* c0 = new TCanvas("c0", "c0");
 	ch.Draw("RateLvsL3 : Entry$");
 	
-	TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);
+	TCanvas* c1 = new TCanvas("c1", "c1");
 	TH2F* hArnaud = new TH2F("hArnaud", "hArnaud", 100, 0, 40, 200, 0, 1050);
 	ch.Draw("E[LORIdx1] : LORTMean - LORTRF>>hArnaud",  cut, "colz");
 	ch.Draw("E[LORIdx2] : LORTMean - LORTRF>>+hArnaud",  cut, "colz");
@@ -224,8 +224,8 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	hArnaud->GetXaxis()->SetTitle("t_{#gamma#gamma} - t_{RF} [ns]");
 	hArnaud->GetYaxis()->SetTitleSize(0.05);
 	hArnaud->GetXaxis()->SetTitleSize(0.05);
-	hArnaud->GetYaxis()->SetTitleOffset(1.77);
-	hArnaud->GetXaxis()->SetTitleOffset(1.35);
+	hArnaud->GetYaxis()->SetTitleOffset(1.5);
+	hArnaud->GetXaxis()->SetTitleOffset(1.25);
 	hArnaud->GetYaxis()->SetLabelSize(0.05);
 	hArnaud->GetXaxis()->SetLabelSize(0.05);
 	hArnaud->GetZaxis()->SetLabelSize(0.04);
@@ -233,10 +233,18 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	hArnaud->Draw("colz");
 	c1->SetLeftMargin(0.1695447);
 	c1->SetRightMargin(0.1428571);
-	PutText(0.46, 0.81, kBlack, "#font[22]{LAPD}", 0.04);
-	PutText(0.46, 0.76, kBlack, "#font[22]{Protons 65 MeV, I = 5 nA}", 0.04);
-	PutText(0.46, 0.71, kBlack, "#font[22]{Target PMMA 5 #times 5 cm}", 0.04);
-	c1->SaveAs("c1.png");
+	TPave *pave = new TPave(15.63999,755.4777,39.14275,1019.809,4,"br");
+	pave->SetFillColor(10);
+	pave->SetLineWidth(2);
+	pave->SetBorderSize(0);
+	pave->SetFillStyle(3001);
+	pave->SetFillColor(kWhite);
+	pave->Draw();
+
+	PutText(0.45, 0.8, kBlack, "#font[22]{LAPD}");
+	PutText(0.45, 0.75, kBlack, "#font[22]{Protons 65 MeV, I = 5 nA}");
+	PutText(0.45, 0.7, kBlack, "#font[22]{Target PMMA 5#times5#times5 cm^{3}}");
+	c1->SaveAs("RFPlotALaArnaud_c1.png");
 	
 	TCanvas* c2 = new TCanvas("c2", "c2");
 	TH1F* hESpillOut = new TH1F("hESpillOut", "hESpillOut", 100, 0, 1100);
@@ -258,8 +266,8 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	ch.Draw("E[LORIdx2]>>+hE", cut);
 	hE->GetXaxis()->SetTitle("E [keV]");
 	hE->GetYaxis()->SetTitle("Entries [a. u.]");
-	hE->GetYaxis()->SetTitleSize(0.055);
-	hE->GetXaxis()->SetTitleSize(0.055);
+	hE->GetYaxis()->SetTitleSize(0.05);
+	hE->GetXaxis()->SetTitleSize(0.05);
 	hE->GetYaxis()->SetTitleOffset(1.6);
 	hE->GetXaxis()->SetTitleOffset(1.35);
 	hE->GetYaxis()->SetLabelSize(0.05);
@@ -273,7 +281,7 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	//hESpillOut->Draw("same");
 	PutText(0.55, 0.81, kBlack, "LAPD", 0.05);
 	PutText(0.55, 0.75, kBlack, "Protons 65 MeV, I = 5 nA", 0.05);
-	PutText(0.55, 0.69, kBlack, "Target PMMA 5 #times 5 cm", 0.05);
+	PutText(0.55, 0.69, kBlack, "Target PMMA 5#times5#times cm^{3}", 0.05);
 }
 
 void RFPlotALaArnaud()
@@ -283,8 +291,8 @@ void RFPlotALaArnaud()
 
 TCut cut("NoLORs == 1 && Evt > 3400 && Evt < 60000");
 
-// RFPlotALaArnaudDirectly(cut, "analysis_v3.2-calibG2/run110LOR.root", "analysis_v3.2-calibG2/run111LOR.root");
- RFPlotALaArnaudDirectly(cut, "analysis_v3.3-calibK1/run118LOR.root");
+ RFPlotALaArnaudDirectly(cut, "analysis_v3.2-calibG2/run110LOR.root", "analysis_v3.2-calibG2/run111LOR.root");
+//RFPlotALaArnaudDirectly(cut, "analysis_v3.3-calibK1/run118LOR.root");
 }
 
 
