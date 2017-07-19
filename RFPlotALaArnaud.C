@@ -243,7 +243,7 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 
 	PutText(0.45, 0.8, kBlack, "#font[22]{LAPD}");
 	PutText(0.45, 0.75, kBlack, "#font[22]{Protons 65 MeV, I = 5 nA}");
-	PutText(0.45, 0.7, kBlack, "#font[22]{Target PMMA 5#times5#times5 cm^{3}}");
+	PutText(0.45, 0.7, kBlack, "#font[22]{PMMA target (5#times5#times5 cm^{3})}");
 	c1->SaveAs("RFPlotALaArnaud_c1.png");
 	
 	TCanvas* c2 = new TCanvas("c2", "c2");
