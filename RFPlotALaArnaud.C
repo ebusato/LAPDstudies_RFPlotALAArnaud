@@ -26,7 +26,7 @@ void RFPlotALaArnaud(int nEvents, TString fileName0, TString fileName1="", TStri
 		       TString fileName8="", TString fileName9="") {
 	gStyle->SetOptStat(0);
 	gStyle->SetOptTitle(0);
-	gStyle->SetPalette(1);
+	gStyle->SetPalette(52,0);
 	
 	TChain ch("tree");
 	ch.Add(fileName0);
@@ -245,6 +245,7 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 	PutText(0.45, 0.75, kBlack, "#font[22]{Protons 65 MeV, I = 5 nA}");
 	PutText(0.45, 0.7, kBlack, "#font[22]{PMMA target (5#times5#times5 cm^{3})}");
 	c1->SaveAs("RFPlotALaArnaud_c1.png");
+	c1->SaveAs("RFPlotALaArnaud_c1.pdf");
 	
 	TCanvas* c2 = new TCanvas("c2", "c2");
 	TH1F* hESpillOut = new TH1F("hESpillOut", "hESpillOut", 100, 0, 1100);
@@ -286,6 +287,7 @@ void RFPlotALaArnaudDirectly(TCut cut, TString fileName0, TString fileName1="", 
 
 void RFPlotALaArnaud()
 {
+  //gStyle->SetPalette(54);
   //TCut cut("NoLORs == 1 && T30[LORIdx1] > 20 && T30[LORIdx1] < 50 && T30[LORIdx2] > 20 && T30[LORIdx2] < 50 && LORRmar < 25");
 	//RFPlotALaArnaudDirectly(cut, "analysis_v2.18-calibG2/run110LOR.root");
 
